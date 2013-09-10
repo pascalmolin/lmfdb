@@ -56,9 +56,23 @@ embeval(k,z) = {
 }
 /* find grossencharacters having Dirichlet part chi */
 
+
+/* small solutions M*x=y mod dZ in Z^r */
+latticesmallsols(M,y,d,lrange=1) = {
+  my(s,s0,K,nk,L);
+  s = matsolvemod(Mat(M),[d]~,[y]~,1);
+  /* s contains one solution and the kernel */
+  [s0, K] = s; nk = matsize(K)[2]; L = [];
+  forvec(v=vector(nk,i,[-lrange,lrange]),
+    L = concat(L, [ (s0+K*v~)~ ] );
+    );
+  L;
+}
+
+
 /* first find extension on torsion units */
 /* returns a Z/dZ basis up to dZ, where d is the order of torsion */
-hc_ext_tu(G,chi,zrange=0) = {
+hc_ext_tu(G,chi,lrange=1) = {
   my(k,bid); [k,bid] = G;
   [order, tu] = k.tu;
   logval = dceval(G,chi,tu)/bid.cyc[1] ; \\ order*logval is is an integer
@@ -69,15 +83,14 @@ hc_ext_tu(G,chi,zrange=0) = {
     zC =  embeval(k,tu);
     m = vector(k.r2,j,round(imag(log(zC[j]))*order/(2*Pi)));
     );
-    print([order, m, logval]);
-    s = matsolvemod(Mat(m),[order]~,[-order*logval]~,1)[2];
-    apply(mattranspose,Vec(s));
+    latticesmallsols(Mat(m),-order*logval,order);
 }
 
 
 /* then on fundamental units */
-hc_ext_fu(G,chi,tors,zrange=0) = {
-  my(k,bid); [k,bid] = G;
+hc_ext_fu(G,chi,tors,lrange=1) = {
+  my(k,bid);
+  [k,bid] = G;
   expo = bid.cyc[1];
   fu = k.fu;
   r = #fu;
@@ -88,24 +101,29 @@ hc_ext_fu(G,chi,tors,zrange=0) = {
   );
   /* add one row for the diagonal embedding */
   m = concat(m, [vector(r+1,i,2)]);
-  print(m);
+  \\print(m);
   b = concat(b, 0);
   m = log(abs(Mat(m~)));
   /* put factors 2 for complex embeddings */
   \\for(j=k.r1+1,r+1,for(i=1,r+1,m[i,j]*=2));
-  s = matsolve(m,Col(b));
-  Vec(s);
+  /* now solve mod the lattice Z^r */
+  my(L=[]);
+  forvec(v=vector(#b,i,[-lrange,lrange]),
+    s = matsolve(m,Col(b+v));
+    L = concat(L,[Vec(s)]);
+    );
+  L;
 }
 
 /* now a complete Hecke Grossencharacter is a tuple
  * [dirichlet char, inftytu, inftyfu]
  */
-gclist(G,chi) = {
-  L = [];
-  tuinf = hc_ext_tu(G,chi);
+gclist(G,chi,turange=1,furange=1) = {
+  my(L = []);
+  tuinf = hc_ext_tu(G,chi,turange);
   for(t=1,#tuinf,
      tors = tuinf[t];
-     L = concat(L,[ [chi,tors,hc_ext_fu(G,chi,tors)] ]);
+     L = concat(L,[ [chi,tors,inf] | inf <- hc_ext_fu(G,chi,tors,furange) ]);
      );
   L;
 }
