@@ -6,7 +6,7 @@ idealsbynormprod(k,n) = {
   L = vector(r);
   for(i=1,r,
       my(Lp = []);
-      [p,ep] = fz[i,];
+      p=fz[i,1];ep=fz[i,2];
       fp = [ pk | pk <- idealprimedec(k,p), pk.f <= ep ];
       if(fp==[],return([])); \\ no solution
       wp = [ pk.f | pk <- fp ];
@@ -43,7 +43,7 @@ checkideallist(k,n) = {
 dcinit(k,mod) = [k,idealstar(k,mod,2)];
 dcchar(G,chi) = cyc=G[2].cyc;vector(#cyc,i,chi[i]*cyc[1]/cyc[i])%cyc[1];
 dceval(G,chi,x) = {
-  my(k,bid); [k,bid] = G;
+  my(k,bid); k=G[1];bid=G[2];
   chi * ideallog(k,x,bid)%bid.cyc[1];
   }
 /* eval at embeddings */
@@ -62,7 +62,7 @@ latticesmallsols(M,y,d,lrange=1,startat=1) = {
   my(s,s0,K,nk,L);
   s = matsolvemod(Mat(M),[d]~,[y]~,1);
   /* s contains one solution and the kernel */
-  [s0, K] = s; nk = matsize(K)[2]; L = [];
+  s0=s[1];K=s[2]; nk = matsize(K)[2]; L = [];
   forvec(v=vector(nk,i,if(i<=startat,[0,0],[-lrange,lrange])),
     L = concat(L, [ (s0+K*v~)~ ] );
     );
@@ -73,8 +73,8 @@ latticesmallsols(M,y,d,lrange=1,startat=1) = {
 /* first find extension on torsion units */
 /* returns a Z/dZ basis up to dZ, where d is the order of torsion */
 hc_ext_tu(G,chi,lrange=1) = {
-  my(k,bid); [k,bid] = G;
-  [order, tu] = k.tu;
+  my(k,bid); k=G[1];bid=G[2];
+  order = k.tu[1];tu =k.tu[2];
   logval = dceval(G,chi,tu)/bid.cyc[1] ; \\ order*logval is is an integer
   if(order == 2, \\ then tu = -1 on each embedding
     m = vector(k.r1+k.r2,j,1);
@@ -90,8 +90,7 @@ hc_ext_tu(G,chi,lrange=1) = {
 
 /* then on fundamental units */
 hc_ext_fu(G,chi,tors,lrange=1) = {
-  my(k,bid);
-  [k,bid] = G;
+  my(k,bid); k=G[1];bid=G[2];
   expo = bid.cyc[1];
   fu = k.fu;
   r = #fu;
@@ -131,8 +130,8 @@ gclist(G,chi,turange=1,furange=1) = {
 
 
 gceval(G,gc,x) = {
-  my(k,bid); [k,bid] = G;
-  my(chi,tuinf,fuinf);[chi,tuinf,fuinf]=gc;
+  my(k,bid); k=G[1];bid=G[2];
+  my(chi,tuinf,fuinf);chi=gc[1];tuinf=gc[2];fuinf=gc[3];
   x = bnfisprincipal(k,x)[2]; 
   xC = embeval(k,x);
   vf = vector(#xC,i,if(i<=k.r1,if(xC[i]<0,1/2,0),arg(xC[i])/(2*Pi)));
@@ -142,8 +141,8 @@ gceval(G,gc,x) = {
 }
        
 gcconductoranalytic(G,gc) = {
-  my(k,bid); [k,bid] = G;
-  my(chi,tuinf,fuinf);[chi,tuinf,fuinf]=gc;
+  my(k,bid); k=G[1];bid=G[2];
+  my(chi,tuinf,fuinf);chi=gc[1];tuinf=gc[2];fuinf=gc[3];
   s = 0;
   for(i=1,k.r1,
     s += polcoeff(lngamma((1/2-I*tuinf[i]+fuinf[i]+x+O(x^2))/2),1);
@@ -163,7 +162,7 @@ gclistbyanalyticconductor(G,chi,turange=0,furange=0) = {
 }
 
 gcdirseries(G,gc,pmax=500) = {
-  my(k,bid); [k,bid] = G;
+  my(k,bid); k=G[1];bid=G[2];
   direuler(p=2,pmax,
     f = idealprimedec(k,p);
     prod(i=1,#f,
