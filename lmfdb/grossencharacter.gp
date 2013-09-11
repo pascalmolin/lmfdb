@@ -58,12 +58,12 @@ embeval(k,z) = {
 
 
 /* small solutions M*x=y mod dZ in Z^r */
-latticesmallsols(M,y,d,lrange=1) = {
+latticesmallsols(M,y,d,lrange=1,startat=1) = {
   my(s,s0,K,nk,L);
   s = matsolvemod(Mat(M),[d]~,[y]~,1);
   /* s contains one solution and the kernel */
   [s0, K] = s; nk = matsize(K)[2]; L = [];
-  forvec(v=vector(nk,i,[-lrange,lrange]),
+  forvec(v=vector(nk,i,if(i<=startat,[0,0],[-lrange,lrange])),
     L = concat(L, [ (s0+K*v~)~ ] );
     );
   L;
@@ -78,12 +78,13 @@ hc_ext_tu(G,chi,lrange=1) = {
   logval = dceval(G,chi,tu)/bid.cyc[1] ; \\ order*logval is is an integer
   if(order == 2, \\ then tu = -1 on each embedding
     m = vector(k.r1+k.r2,j,1);
+    latticesmallsols(Mat(m),-order*logval,order,startat=k.r1+1);
     ,
     \\ more units, so no real embedding
     zC =  embeval(k,tu);
     m = vector(k.r2,j,round(imag(log(zC[j]))*order/(2*Pi)));
-    );
     latticesmallsols(Mat(m),-order*logval,order);
+    );
 }
 
 
@@ -128,6 +129,7 @@ gclist(G,chi,turange=1,furange=1) = {
   L;
 }
 
+
 gceval(G,gc,x) = {
   my(k,bid); [k,bid] = G;
   my(chi,tuinf,fuinf);[chi,tuinf,fuinf]=gc;
@@ -151,6 +153,13 @@ gcconductoranalytic(G,gc) = {
     );
   mod = bid[1];
   sqrt( abs(k.disc*idealnorm(k,mod))/Pi^poldegree(k.pol))*exp(2*real(s)); 
+}
+
+gclistbyanalyticconductor(G,chi,turange=0,furange=0) = {
+  L = gclist(G,chi,turange,furange);
+  Lc = [ [gc,gcconductoranalytic(G,gc)] | gc <- L ];
+  vecsort(Lc,2);
+  \\[ lc[1] | lc <- vecsort(Lc,2) ];
 }
 
 gcdirseries(G,gc,pmax=500) = {
