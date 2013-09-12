@@ -16,14 +16,17 @@
     </tr>
   </thead>
   <tbody>
-    {% for mod, ord, struct, chars  in contents %}
+    {% for norm, mod, ord, struct, chars  in contents %}
     <tr>
-      <th class="left">
+    {% if norm %}<td>{{norm}}</td> {% endif %}
+      <td>
+        {% with tex, label = mod %}
         <a align="center"
-          href=" {{ url_character(type=type, number_field=nflabel, modulus=mod) }} ">
-          {{ mod }}
+          href=" {{ url_character(type=type, number_field=nflabel, modulus=label) }} ">
+          {{ tex }}
         </a>
-      </th>
+        {% endwith %}
+      </td>
       <td style="font-family: serif;" >{{ord}}</td>
       <td style="font-family: serif;" >{{struct}}</td>
         {% for mod,num,tex,prim in chars %}

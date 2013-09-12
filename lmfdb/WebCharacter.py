@@ -108,6 +108,9 @@ class WebCharObject:
     def charvalues(self, chi):
         return [ self.texlogvalue(chi.logvalue(x), tag=True) for x in self.Gelts() ]
 
+    def _ideal_desc(self, ideal):
+        return (self.ideal2tex(ideal),self.ideal2label(ideal))
+
 #############################################################################
 ###  Dirichlet type
 
@@ -311,11 +314,26 @@ class WebHecke(WebCharObject):
         return (modlabel, numlabel, self.char2tex(c), prim ) 
 
     @staticmethod
+    def _prime2tex(pideal, e):
+        P = pideal.pari_prime()
+        p,f = P[0],P[3]
+        if e>1:
+            e = '^{%i}'%e
+        else:
+            e = ''
+        if f>1:
+            f = '^{%i}'%f
+        else:
+            f = ''
+        return '\\mathfrak p_{%i%s}%s'%(p,f,e)
+        
+    @staticmethod
     def ideal2tex(ideal):
-        a,b = ideal.gens_two()
-        return "\(\langle %s, %s\\rangle\)"%(a._latex_(), b._latex_())
-        #""" to print, show the factorization """
-        #return ''.join('\\mathfrak p_{%i^{%i}}^{%i}'%(p,e) for p,e in ideal.factor() () 
+        #a,b = ideal.gens_two()
+        #return "\(\langle %s, %s\\rangle\)"%(a._latex_(), b._latex_())
+        """ to print, show the factorization """
+        s = ''.join( WebHecke._prime2tex(p,e) for p,e in ideal.factor() ) 
+        return '\(%s\)'%s
 
     @staticmethod
     def ideal2label(ideal):
@@ -427,7 +445,7 @@ class WebCharFamily(WebCharObject):
     def __init__(self, **args):
         self._keys = [ 'title', 'credit', 'codelangs', 'type', 'nf', 'nflabel',
             'nfpol', 'codeinit', 'headers', 'contents' ]   
-        self.headers = [ 'modulus', 'order', 'structure', 'first characters' ]
+        self.headers = [ 'conductor', 'order', 'structure', 'first characters' ]
         self._contents = None
         self.maxrows, self.rowtruncate = 25, False
         WebCharObject.__init__(self, **args)
@@ -444,7 +462,8 @@ class WebCharFamily(WebCharObject):
         order = G.order
         struct = G.structure
         firstchars = [ self._char_desc(c) for c in G.first_chars() ]
-        self._contents.append( (self.ideal2label(modulus), order, struct, firstchars) )
+        # here None is the norm that we don't display for Dirichlet chars
+        self._contents.append( (None, self._ideal_desc(modulus), order, struct, firstchars) )
 
     @property
     def contents(self):
@@ -897,8 +916,9 @@ class WebHeckeExamples(WebHecke):
                      '2.0.4.1',
                      '3.3.81.1',
                      '3.1.44.1',
-                     #'4.4.2403.1',
-                     #'4.2.283.1',
+                     '4.4.2304.1',
+                     '4.2.283.1',
+                     '4.0.86485.1',
                      ]
         self.credit = "Pari, Sage"
         self.codelangs = ('pari', 'sage')
@@ -934,6 +954,7 @@ class WebHeckeFamily(WebCharFamily, WebHecke):
         self.k = self.label2nf(self.nflabel)
         self.credit = 'Pari, Sage'
         self.codelangs = ('pari', 'sage')
+        self.headers = [ 'norm', 'conductor', 'order', 'structure', 'first characters' ]
         
     def first_moduli(self, bound=200):
         """ first ideals which are conductors """
@@ -978,7 +999,7 @@ class WebHeckeFamily(WebCharFamily, WebHecke):
         order = H.order()
         struct = self.structure(H)
         firstchars = [ self._char_desc(c) for c in self.first_chars(H) ]
-        self._contents.append( (self.ideal2label(modulus), order, struct, firstchars) )
+        self._contents.append( (modulus.norm(), self._ideal_desc(modulus), order, struct, firstchars) )
 
 
     @property
