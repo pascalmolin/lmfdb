@@ -314,6 +314,9 @@ class WebHecke(WebCharObject):
     def ideal2tex(ideal):
         a,b = ideal.gens_two()
         return "\(\langle %s, %s\\rangle\)"%(a._latex_(), b._latex_())
+        #""" to print, show the factorization """
+        #return ''.join('\\mathfrak p_{%i^{%i}}^{%i}'%(p,e) for p,e in ideal.factor() () 
+
     @staticmethod
     def ideal2label(ideal):
         """
