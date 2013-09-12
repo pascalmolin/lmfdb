@@ -1071,7 +1071,8 @@ class ArtinLfunction(Lfunction):
                                          self.conductor, self.tim_index)
 
         self.title = ("L function for an Artin representation of dimension "
-                      + str(dimension) + ", conductor " + str(conductor))
+                      + str(self.dimension)
+                      + ", conductor " + str(self.conductor))
 
         self.motivic_weight = 0
         self.algebraic = True
