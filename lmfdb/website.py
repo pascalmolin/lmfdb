@@ -27,8 +27,7 @@ import lfunctions
 import users
 import knowledge
 import upload
-#import DirichletCharacter
-import Characters
+import characters
 import local_fields
 import galois_groups
 import number_field_galois_groups
@@ -36,6 +35,7 @@ import artin_representations
 import zeros
 import crystals
 import permutations
+import hypergm
 
 import raw
 from modular_forms.maass_forms.picard import mwfp
@@ -152,22 +152,6 @@ def form_example():
     sidebar = [('topic1', [("abc", "#"), ("def", "#")]), ("topic2", [("ghi", "#"), ("jkl", "#")])]
     info = {'sidebar': sidebar}
     return render_template("form.html", info=info)
-
-
-#@app.route("/Character/Dirichlet/")
-#@app.route("/Character/Dirichlet/<arg1>")
-#@app.route("/Character/Dirichlet/<arg1>/<arg2>")
-#def render_Character(arg1=None, arg2=None):
-#    return DirichletCharacter.render_webpage(request, arg1, arg2)
-#
-#
-#@app.route("/Character/Hecke/")
-#@app.route("/Character/Hecke/<arg1>")
-#@app.route("/Character/Hecke/<arg1>/<arg2>")
-#@app.route("/Character/Hecke/<arg1>/<arg2>/<arg3>")
-#def render_HeckeCharacter(arg1=None, arg2=None, arg3=None):
-#    return Characters.render_webpage(request, arg1, arg2, arg3)
-
 
 @app.route('/ModularForm/GSp/Q')
 @app.route('/ModularForm/GSp/Q/<group>')

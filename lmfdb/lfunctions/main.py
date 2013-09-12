@@ -12,11 +12,11 @@ import numpy
 import pymongo
 from Lfunction import *
 import LfunctionPlot as LfunctionPlot
-from lmfdb.utils import to_dict
+from lmfdb.utils import to_dict, url_character
 import bson
 from Lfunctionutilities import (lfuncDStex, lfuncEPtex, lfuncFEtex,
                                 truncatenumber, styleTheSign, specialValueString)
-from lmfdb.DirichletCharacter import getPrevNextNavig
+from lmfdb.WebCharacter import WebDirichlet
 from lmfdb.lfunctions import l_function_page, logger
 from lmfdb.elliptic_curve import cremona_label_regex, lmfdb_label_regex
 from LfunctionComp import isogenyclasstable
@@ -196,7 +196,7 @@ def l_function_ec_page(label):
             return flask.redirect(url_for('.l_function_ec_page', label=label[:-1]), 301)
         else:
             args = {'label': label}
-            return render_single_Lfunction(Lfunction_EC, args, request)
+            return render_single_Lfunction(Lfunction_EC_Q, args, request)
 
     m = cremona_label_regex.match(label)
     if m is not None:
@@ -305,7 +305,7 @@ def l_function_ec_sym_page(power, label):
 @l_function_page.route("/Lcalcurl/<Ltype>/<url>/")
 def l_function_lcalc_page(Ltype, url):
     args = {Ltype: Ltype, url: url}
-    return render_single_Lfunction(Lfunction, args, request)
+    return render_single_Lfunction(Lfunction_lcalc, args, request)
 
 
 ################################################################################
@@ -315,7 +315,6 @@ def render_single_Lfunction(Lclass, args, request):
     temp_args = to_dict(request.args)
     logger.debug(args)
     logger.debug(temp_args)
-
     try:
         L = Lclass(**args)
         try:
@@ -338,7 +337,8 @@ def render_lcalcfile(L, url):
     try:  # First check if the Lcalc file is stored in the database
         response = make_response(L.lcalcfile)
     except:
-        response = make_response(L.createLcalcfile_ver2(url))
+        import LfunctionLcalc
+        response = make_response(LfunctionLcalc.createLcalcfile_ver2(L, url))
 
     response.headers['Content-type'] = 'text/plain'
     return response
@@ -428,17 +428,26 @@ def initLfunction(L, args, request):
     elif L.Ltype() == 'riemann':
         info['bread'] = get_bread(1, [('Riemann Zeta', request.url)])
         info['friends'] = [('\(\mathbb Q\)', url_for('number_fields.by_label', label='1.1.1.1')), ('Dirichlet Character \(\\chi_{1}(1,\\cdot)\)',
-                           url_for('render_Character', arg1=1, arg2=1))]
+                           url_character(type='Dirichlet', modulus=1, number=1))]
 
     elif L.Ltype() == 'dirichlet':
-        info['navi'] = getPrevNextNavig(L.charactermodulus, L.characternumber, "L")
+        mod, num = L.charactermodulus, L.characternumber
+        Lpattern = r"\(L(s,\chi_{%s}(%s,&middot;))\)"
+        if mod > 1:
+            pmod,pnum = WebDirichlet.prevprimchar(mod, num)
+            Lprev = (Lpattern%(pmod,pnum),url_for('.l_function_dirichlet_page',modulus=pmod,number=pnum))
+        else: 
+            Lprev = ('','')
+        nmod,nnum = WebDirichlet.nextprimchar(mod, num)
+        Lnext = (Lpattern%(nmod,nnum),url_for('.l_function_dirichlet_page',modulus=nmod,number=nnum))
+        info['navi'] = (Lprev,Lnext)
         snum = str(L.characternumber)
         smod = str(L.charactermodulus)
-        charname = '\(\\chi_{%s}({%s},\\cdot)\)' % (smod, snum)
+        charname = WebDirichlet.char2tex(smod, snum)
         info['bread'] = get_bread(1, [(charname, request.url)])
         info['friends'] = [('Dirichlet Character ' + str(charname), friendlink)]
 
-    elif L.Ltype() == 'ellipticcurve':
+    elif L.Ltype() == 'ellipticcurveQ':
         label = L.label
         while friendlink[len(friendlink) - 1].isdigit():  # Remove any number at the end to get isogeny class url
             friendlink = friendlink[0:len(friendlink) - 1]
@@ -617,14 +626,12 @@ def render_plotLfunction_from_db(db, dbTable, condition):
         db = sqlite3.connect(data_location)
         with db:
             cur = db.cursor()
-            query = "SELECT * FROM {0} WHERE {1} LIMIT 1".format(dbTable,
+            query = "SELECT start,end,points FROM {0} WHERE {1} LIMIT 1".format(dbTable,
                                                                   condition)
-            logger.debug(query)
             cur.execute(query)
             row = cur.fetchone()
-            logger.debug(row)
-            
-        Lid, start, end, values = row
+      
+        start,end,values = row
         values = numpy.frombuffer(values)
         step = (end - start)/values.size
 
@@ -738,7 +745,7 @@ def generateLfunctionFromUrl(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg
         return Lfunction_Dirichlet(charactermodulus=arg3, characternumber=arg4)
 
     elif arg1 == 'EllipticCurve' and arg2 == 'Q':
-        return Lfunction_EC(label=arg3)
+        return Lfunction_EC_Q(label=arg3)
 
     elif arg1 == 'ModularForm' and arg2 == 'GL2' and arg3 == 'Q' and arg4 == 'holomorphic':  # this has args: one for weight and one for level
         # logger.debug(arg5+arg6+str(arg7)+str(arg8)+str(arg9))
@@ -769,7 +776,7 @@ def generateLfunctionFromUrl(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg
         return SymmetricPowerLfunction(power=arg2, underlying_type=arg3, field=arg4, label=arg5)
 
     elif arg1 == 'Lcalcurl':
-        return Lfunction(Ltype=arg1, url=arg2)
+        return Lfunction_lcalc(Ltype=arg1, url=arg2)
 
     else:
         return flask.redirect(403)
