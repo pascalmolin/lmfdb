@@ -4,9 +4,62 @@
 
 
 <p>
-A Hecke Character is a (finite order) character on the ideals
-of a number field $K$. Such a character factors over the
-ray class group $Cl(m)$ of some modulus $m$.
+A Hecke Character is a character
+\( \chi=\mathcal{I}_{K}\to \C^\times \)
+on the ideals \( \mathfrak a\) of a number field $K$. 
+</p>
+
+<p>
+In the LMFDB, Hecke characters are described as triples
+\( (\chi_f, \chi_\infty, \chi_{\mathcal Cl}) \)
+of
+{{ KNOWL('chars.hecke.dirichlet_character', title='Dirichlet character') }}
+\(\chi_f\) of some
+{{ KNOWL('chars.hecke.modulus', title='modulus') }} \(\mathfrak m \),
+{{ KNOWL('chars.hecke.infinity_type', title='infinity type') }}
+\( \chi_{\infty} \) and
+{{ KNOWL('chars.hecke.classgroupchar', title='class group character') }}
+\( \chi_{\mathcal C_l} \).
+</p>
+
+
+<p>
+Hecke characters can be described as couples
+\( \left(\chi_P, \chi_{\mathcal C_l}\right) \)
+where
+<ul>
+  <li>
+  \( \chi_P \) is a character on the group \( P(K) \) of principal ideals
+  \( (\alpha),  \alpha\in\mathcal O_K \)
+  </li>
+  <li>
+  and \( \chi_{\mathcal C_l} : \mathcal C_l(K) \to \C^\times \)
+  is a class group character.
+  </li>
+</ul>
+
+<p>
+The principal characters \( \chi_P \) can in turn be described as products
+\( \chi_P = \chi_{f}\chi_{\infty} \)
+where
+<ul>
+  <li>
+  \( \chi_f : \left(\mathcal{O}_K/\mathfrak m\right)^\times \to \C^\times \)
+  is a (finite order) Dirichlet character defined modulo
+  a modulus \( \mathfrak m \);
+  </li>
+  <li>
+  \( \chi_{\infty} : K\otimes \R \to \C^\times \)
+  is a continuous character on the archimedean embeddings of \( K \);
+  </li>
+  </ul>
+  such that in order to define a character on the ideals
+  these characters satisfy the compatibility condition
+  \(
+    \chi_f(\alpha) \times \chi_{\infty}(\alpha) = 1 
+  \)
+  for all units \( \alpha \in \mathcal{O}_K^\times \).
+  {# \equiv 1\mod \mathfrak m. #}
 </p>
 
 <p>
@@ -20,6 +73,7 @@ Select a <a href="{{url_for('number_fields.number_field_render_webpage')}}">glob
       {% for h in headers %}
       <th class="weight">{{h}} </th>
       {% endfor %}
+      <th class="weight"> Hecke character examples </th>
     </tr>
   </thead>
   <tbody>
@@ -36,6 +90,32 @@ Select a <a href="{{url_for('number_fields.number_field_render_webpage')}}">glob
     {% endfor %} 
   </tbody>    
 </table>
+
+
+<h2>Issues</h2>
+<ol>
+  <li>
+  character decomposition
+  </li>
+  <li>
+  labels/tex for ideals \(\mathfrak m\)
+  </li>
+  <li>
+  labels/tex for characters
+  </li>
+  <li>
+  browsing/levels (Dirichlet\(\to \chi_\infty \) ), groups,...
+  </li>
+  <li>
+  properties and friends
+  </li>
+  <li>
+  on the fly vs. precomputed data (e.g. units, number fields available)
+  </li>
+</ol>
+
+
+
 
 {% endblock %}
 

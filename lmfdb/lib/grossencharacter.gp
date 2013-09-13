@@ -1,4 +1,21 @@
 
+/*
+ compute a list of first prime decompositions
+ over number field k
+ and order primes:
+  - first by inertia degree
+  - then by complex embeddings
+ */
+smallprimeslist(k,pmax) = {
+  forprime(p=2,pmax,
+    fp = idealprimedec(k,p);
+    r = matsize(fp)[1];
+    /* ordering on primes */
+    fp = [ pk | pk <- , pk.f <= ep ];
+    );
+}
+
+
 idealsbynormprod(k,n) = {
   if(n==1, return([ [ idealhnf(k,1) ] ] ));
   fz = factor(n);

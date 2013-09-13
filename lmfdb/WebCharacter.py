@@ -10,7 +10,7 @@ try:
     from dirichlet_conrey import *
 except:
     logger.critical("dirichlet_conrey.pyx cython file is not available ...")
-from HeckeCharacters import *
+from lib.HeckeCharacters import *
 
 def evalpolelt(label,gen,genlabel='a'):
     """ label is a compact polynomial expression in genlabel                    
@@ -319,7 +319,9 @@ class WebHecke(WebCharObject):
             f = '^{%i}'%f
         else:
             f = ''
-        return '\\mathfrak p_{%i%s}%s'%(p,f,e)
+        import random
+        l = random.choice('abc')
+        return '\\mathfrak p_{%i%s%s}%s'%(p,f,l,e)
         
     @staticmethod
     def ideal2tex(ideal):
