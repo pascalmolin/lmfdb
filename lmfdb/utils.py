@@ -91,7 +91,16 @@ def make_logger(bp_or_name, hl=False):
         name = bp_or_name
     l = logging.getLogger(name)
     l.propagate = False
-    if logfocus is None or logfocus == name:
+    if logfocus is None:
+        l.setLevel(logging.INFO)
+    elif logfocus == name:
+        # this will NEVER BE TRUE, because logfocus is set AFTER
+        # we have created all of the loggers. This is ok for now,
+        # because we are setting the log level later when we set
+        # the logfocus variable.
+        #
+        # Maybe someday someone will rewrite this so that it makes
+        # sense...
         l.setLevel(logging.DEBUG)
     else:
         l.setLevel(logging.WARNING)
