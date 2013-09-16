@@ -30,14 +30,14 @@ class WebIdeals(dict):
                 label = (p,f,'')
                 Lp[f] = [ (label, gp) ]
                 self[gp] = label
-                label = '%s-%s%s'%label
+                label = '%s_%s%s'%label
                 self.prime[label] = gp
             else:
                 Lf = sorted(Lp[f]) # which sort ???? by embedding ???
                 Lp[f] = [ ( (p,f,chr(i+97)) ,gp) for i,gp in enumerate(Lf) ]
                 for label,gp in Lp[f]:
                     self[gp] = label
-                    label = '%s-%s%s'%label
+                    label = '%s_%s%s'%label
                     self.prime[label] = gp
         self.tree[p] = Lp
   
@@ -63,7 +63,7 @@ class WebIdeals(dict):
             e = '^%i'%e
         else:
             e = ''
-        return '%i-%i%s%s'%(p,f,l,e)
+        return '%i_%i%s%s'%(p,f,l,e)
 
     def tex(self,ideal):
         f = self.k.ideal(ideal).factor()
@@ -112,7 +112,7 @@ class WebIdeals(dict):
                 plabel,e = plabel.split('^')
             else:
                 e = 1
-            p,fe = plabel.split('-')
+            p,fe = plabel.split('_')
             if plabel not in self.prime:
                 self._add_prime(int(p))
             ideal *= self.prime[plabel]**e
