@@ -1,4 +1,5 @@
 from sage.all import *
+sys.path.insert(0,os.path.abspath('./lib/'))
 from pari_bnr import pari_bnrisconductor
 
 class WebIdeals(dict):
@@ -50,6 +51,8 @@ class WebIdeals(dict):
   
     def label(self,ideal):
         f = self.k.ideal(ideal).factor()
+        if len(f) == 0:
+            return '1'
         return '.'.join( [self._primelabel(p,e) for p,e in f ] )
   
     def _primelabel(self,p,e=1):
@@ -64,6 +67,8 @@ class WebIdeals(dict):
 
     def tex(self,ideal):
         f = self.k.ideal(ideal).factor()
+        if len(f) == 0:
+            return '1'
         return ''.join( [self._primetex(p,e) for p,e in f ] )
 
     def _primetex(self,p,e=1):
@@ -108,10 +113,16 @@ class WebIdeals(dict):
             else:
                 e = 1
             p,fe = plabel.split('-')
+            if plabel not in self.prime:
+                self._add_prime(int(p))
             ideal *= self.prime[plabel]**e
         return ideal
 
-    def first_conductors(self, bound=200):
+    def first_conductors(self, n):
+        g = self.iter_conductors()
+        return [ g.next() for i in xrange(n) ]
+
+    def iter_conductors(self, bound=200):
         """ first ideals which are conductors """
         bnf = self.k.pari_bnf()                                                           
         oldbound = 0
@@ -127,7 +138,7 @@ class WebIdeals(dict):
             bound *=2
 
     def __call__(self, ideal):
-        if isinstance(ideal, str):
+        if isinstance(ideal, (str,unicode)):
             ideal = self.fromlabel(ideal)
         else:
             ideal = self.k.ideal(ideal)

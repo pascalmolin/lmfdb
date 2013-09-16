@@ -1,5 +1,3 @@
-from sage.all import *
-
 cdef extern from 'pari/pari.h':
     ctypedef long* GEN
     long bnrisconductor0(GEN A, GEN B, GEN C)

@@ -109,7 +109,7 @@ def render_Dirichletwebpage(modulus=None, number=None):
         return render_template('CharGroup.html', **info)
     else:
         info = WebDirichletCharacter(**args).to_dict()
-        info['navi'] = navi([info['previous'],info['next']])
+        info['navi'] = (info['previous'],info['next'])
         m,n = info['modlabel'], info['numlabel']
         info['bread'] = [('Characters','/Character'),
                          ('Dirichlet','/Character/Dirichlet'),
@@ -118,10 +118,6 @@ def render_Dirichletwebpage(modulus=None, number=None):
         #logger.info(info)
         return render_template('Character.html', **info)
 
-def navi(L):
-    r = [ (l, url_character(**args)) for l, args in L if l ]
-    return r
-    
 @characters_page.route("/calc-<calc>/Dirichlet/<int:modulus>/<int:number>")
 def dc_calc(calc, modulus, number):
     val = request.args.get("val", [])
@@ -174,7 +170,7 @@ def render_Heckewebpage(number_field=None, modulus=None, number=None):
         return render_template('CharGroup.html', **info)
     else:
         info = WebHeckeCharacter(**args).to_dict()
-        info['navi'] = navi([info['previous'],info['next']])
+        info['navi'] = (info['previous'],info['next'])
         m,n = info['modlabel'], info['number']
         info['bread'] = [('Characters','/Character'),
                          ('Hecke','/Character/Hecke'),

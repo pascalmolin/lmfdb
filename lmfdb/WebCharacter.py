@@ -6,6 +6,7 @@ import re
 from lmfdb.utils import parse_range, make_logger, url_character
 logger = make_logger("DC")
 from WebNumberField import WebNumberField
+from WebIdeals import WebIdeals
 try:
     from dirichlet_conrey import *
 except:
@@ -268,8 +269,9 @@ class WebHecke(WebCharObject):
         """
     def _compute(self):
         self.k = self.label2nf(self.nflabel)
-        self._modulus = self.label2ideal(self.k, self.modlabel)
-        self.G = G = RayClassGroup(self.k, self._modulus)
+        self.ids = WebIdeals(self.k)
+        self._modulus = self.ids(self.modlabel)
+        self.G = G = RayClassGroup(self.k, self._modulus.ideal)
         self.H = H = self.G.dual_group()
         #self.number = lmfdb_label2hecke(self.numlabel)
         # make this canonical
@@ -307,58 +309,14 @@ class WebHecke(WebCharObject):
             prim = c.is_primitive()
         return (modlabel, numlabel, self.char2tex(c), prim ) 
 
-    @staticmethod
-    def _prime2tex(pideal, e):
-        P = pideal.pari_prime()
-        p,f = P[0],P[3]
-        if e>1:
-            e = '^{%i}'%e
-        else:
-            e = ''
-        if f>1:
-            f = '^{%i}'%f
-        else:
-            f = ''
-        import random
-        l = random.choice('abc')
-        return '\\mathfrak p_{%i%s%s}%s'%(p,f,l,e)
+    def ideal2tex(self, ideal):
+        return '\(%s\)'%(ideal.tex)
+
+    def ideal2label(self, ideal):
+        return ideal.label
         
-    @staticmethod
-    def ideal2tex(ideal):
-        #a,b = ideal.gens_two()
-        #return "\(\langle %s, %s\\rangle\)"%(a._latex_(), b._latex_())
-        """ to print, show the factorization """
-        s = ''.join( WebHecke._prime2tex(p,e) for p,e in ideal.factor() ) 
-        return '\(%s\)'%s
-
-    @staticmethod
-    def ideal2label(ideal):
-        """
-        labeling convention for ideal f:
-        use two elements representation f = (n,b)
-        with n = f cap Z an integer
-         and b an algebraic element sum b_i a^i
-        label f as n.b1+b2*a^2+...bn*a^n
-        (dot between n and b, a is the field generator, use '+' and )
-        """
-        a,b = ideal.gens_two()
-        s = '+'.join( '%sa%i'%(b,i) for i,b in enumerate(b.polynomial().list())
-                                      if b != 0 ) 
-        return "%s.%s"%(a,s.replace('+-','-').replace('/','o'))
-
-    @staticmethod
-    def label2ideal(k,label):
-        """ k = underlying number field """
-        if label.count('.'):
-            n, b = label.split(".")
-        else:
-            n, b = label, '0'
-        a = k.gen()
-        # FIXME: dangerous
-        n, b = evalpolelt(n,a,'a'), evalpolelt(b,a,'a')
-        n, b = k(n), k(b)
-        return k.ideal( (n,b) )
-
+    def label2ideal(self, label):
+        return self.ids(label)
            
     """
     underlying group contains ideal classes, but are represented
@@ -392,7 +350,7 @@ class WebHecke(WebCharObject):
     def label2group(self,x):
         """ x is either an element of k or a tuple of ints or an ideal """
         if x.count('.'):
-            x = self.label2ideal(self.k,x)
+            x = self.label2ideal(x)
         elif x.count('a'):
             a = self.k.gen()
             x = evalpolelt(x,a,'a')
@@ -952,31 +910,20 @@ class WebHeckeFamily(WebCharFamily, WebHecke):
 
     def _compute(self):
         self.k = self.label2nf(self.nflabel)
+        self.ids = WebIdeals(self.k)
         self.credit = 'Pari, Sage'
         self.codelangs = ('pari', 'sage')
         self.headers = [ 'norm', 'conductor', 'order', 'structure', 'first characters' ]
         
-    def first_moduli(self, bound=200):
-        """ first ideals which are conductors """
-        bnf = self.k.pari_bnf()                                                           
-        oldbound = 0
-        while True:
-            L = bnf.ideallist(bound)[oldbound:]
-            for l in L:   
-                if l == []: next                                                           
-                for ideal in l:                                            
-                    if gp.bnrisconductor(bnf,ideal):
-                        yield self.k.ideal(ideal)
-            """ double the range if one needs more ideal """
-            oldbound = bound
-            bound *=2
+    def first_moduli(self, n=20):
+        return self.ids.first_conductors(n)
 
     """ for Hecke, I don't want to init WebHeckeGroup classes
         (recomputing number field and modulus is stupid)
         rewrite some things
     """
     def chargroup(self, mod):
-        return RayClassGroup(self.k,mod).dual_group()
+        return RayClassGroup(self.k, mod.ideal).dual_group()
 
     def structure(self, H):
         return self.struct2tex(H.invariants())
@@ -999,7 +946,7 @@ class WebHeckeFamily(WebCharFamily, WebHecke):
         order = H.order()
         struct = self.structure(H)
         firstchars = [ self._char_desc(c) for c in self.first_chars(H) ]
-        self._contents.append( (modulus.norm(), self._ideal_desc(modulus), order, struct, firstchars) )
+        self._contents.append( (modulus.ideal.norm(), self._ideal_desc(modulus), order, struct, firstchars) )
 
 
     @property
@@ -1065,23 +1012,32 @@ class WebHeckeCharacter(WebChar, WebHecke):
 
     def char4url(self, chi):
         # FIXME: call url_character and only return (label, url)
+        logger.info('entering char4url')
         if chi is None:
-            return ('', {})
+            return ('', '')
         label = self.char2tex(chi)
+        logger.info('label = %s'%label)
         args = {'type': 'Hecke',
                 'number_field': self.nflabel,
-                'modulus': self.ideal2label(chi.modulus()),
+                'modulus': self._modulus.label,
                 'number': self.number2label(chi.exponents())}
-        return (label, args)
+        url = url_character(**args)
+        logger.info('url = %s'%url)
+        logger.info('returning %s,%s'%(label,url))
+        return (label, url)
 
     @property
     def previous(self):
+        logger.info('entering previous')
         psi = self.chi.prev_character()
+        logger.info('previous=%s'%psi)
         return self.char4url(psi)
 
     @property
     def next(self):
+        logger.info('entering next')
         psi = self.chi.next_character()
+        logger.info('next=%s'%psi)
         return self.char4url(psi)
 
 class WebHeckeGroup(WebCharGroup, WebHecke):
