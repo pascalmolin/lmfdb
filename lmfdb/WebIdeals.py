@@ -1,4 +1,5 @@
 from sage.all import *
+from pari_bnr import pari_bnrisconductor
 
 class WebIdeals(dict):
 
@@ -28,12 +29,14 @@ class WebIdeals(dict):
                 label = (p,f,'')
                 Lp[f] = [ (label, gp) ]
                 self[gp] = label
+                label = '%s-%s%s'%label
                 self.prime[label] = gp
             else:
                 Lf = sorted(Lp[f]) # which sort ???? by embedding ???
                 Lp[f] = [ ( (p,f,chr(i+97)) ,gp) for i,gp in enumerate(Lf) ]
                 for label,gp in Lp[f]:
                     self[gp] = label
+                    label = '%s-%s%s'%label
                     self.prime[label] = gp
         self.tree[p] = Lp
   
@@ -77,7 +80,7 @@ class WebIdeals(dict):
             f = '^{%i}'%f
         else:
             f = ''
-        return '\\mathfrak p_{%i%s%s}%s'%(p,f,l,e)
+        return '\\ideal{p}_{%i%s%s}%s'%(p,f,l,e)
         
     def reduce(self,powers):
         pass
@@ -113,20 +116,22 @@ class WebIdeals(dict):
         bnf = self.k.pari_bnf()                                                           
         oldbound = 0
         while True:
-            gp._expect.close(force=1)
-            gp._start()
             L = bnf.ideallist(bound)[oldbound:]
             for l in L:   
                 if l == []: next                                                           
                 for ideal in l:                                            
-                    if gp.bnrisconductor(bnf,ideal):
+                    if pari_bnrisconductor(bnf,ideal):
                         yield self.__call__(ideal)
             """ double the range if one needs more ideal """
             oldbound = bound
             bound *=2
 
     def __call__(self, ideal):
-        return WebIdeal(self,self.k.ideal(ideal))
+        if isinstance(ideal, str):
+            ideal = self.fromlabel(ideal)
+        else:
+            ideal = self.k.ideal(ideal)
+        return WebIdeal(self,ideal)
 
 class WebIdeal():
 
