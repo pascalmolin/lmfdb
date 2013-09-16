@@ -1,3 +1,6 @@
+/*for tests*/
+k = bnfinit(x^4+x^3+7);
+
 
 /*
  compute a list of first prime decompositions
@@ -5,16 +8,53 @@
  and order primes:
   - first by inertia degree
   - then by complex embeddings
+ return a list [prime, [ list of primes dividing ] ]
  */
-smallprimeslist(k,pmax) = {
+smallprimeslistandname(k,pmax) = {
+  my(n=poldegree(k.pol));
+  my(L = vector(primepi(pmax)));
+  my(l = 0);
+  my(sep="-");
   forprime(p=2,pmax,
-    fp = idealprimedec(k,p);
-    r = matsize(fp)[1];
-    /* ordering on primes */
-    fp = [ pk | pk <- , pk.f <= ep ];
-    );
+      my(fp = idealprimedec(k,p));
+      my(Lp=[]);
+      /* if p is inert or totally ramified, no need to label */
+      if(#fp == 1,
+        fp = fp[1];
+        if(fp.f == n,
+          /* inert */ 
+          Lp = [ [Str(p),p ] ], /* or Str(p,sep,n) and fp ? */
+          Lp = [ [Str(p,sep,1),fp] ]
+          );
+        ,
+        /* first order and split by inertia degree */
+        (fsort(a,b)=if(a.f!=b.f,b.f-a.f,
+                       a.e!=b.e,b.e-a.e,
+                       t2a=a[2]~*k.t2*a[2];
+                       t2b=b[2]~*k.t2*b[2];
+                       sign(t2b-t2a)
+                       ));
+        fp = vecsort(fp,fsort);
+        \\Lp = [ [ fp[1].f, [ fp[1] ] ] ];
+        my(f=0); my(j);
+        for(i=1,#fp,
+          print(i,fp[i]);
+          \\if(fp[i].f == Lp[j][1],
+          if(fp[i].f!=f, f = fp[i].f; j=1);
+            \\Lp[j][2] = concat(Lp[j][2],[fp[i]]),
+            Lp = concat(Lp, [ [ Str(p,sep,f,Strchr(96+j)), fp[i] ] ]); j++;
+            \\Lp = concat(Lp, [ fp[i].f, [ fp[i] ] ] ); j++
+            \\);
+          );
+        );
+      L[l++] = [p,Lp];
+      );
+  L;
 }
-
+idealnames(k,pmax) = {
+  my(L = smallprimeslistandname(k,pmax));
+  concat( [ [ p[1] | p <- l[2] ] | l <- L ]);
+}
 
 idealsbynormprod(k,n) = {
   if(n==1, return([ [ idealhnf(k,1) ] ] ));
