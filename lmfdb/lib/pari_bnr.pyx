@@ -1,15 +1,26 @@
+
+include 'sage/ext/stdsage.pxi'
+include 'sage/ext/interrupt.pxi'
+
+from sage.structure.sage_object cimport SageObject
+
 cdef extern from 'pari/pari.h':
     ctypedef long* GEN
     long bnrisconductor0(GEN A, GEN B, GEN C)
-## would be nice to have bnrinit
-#cdef extern from 'pari/pari.h':
-#    ctypedef long* GEN
-#    long bnrinit0(GEN bignf,GEN ideal,long flag)
+    GEN bnrinit0(GEN bignf, GEN ideal, long flag)
 
-from sage.libs.pari.gen cimport gen
+import sage.libs.pari.gen
+from sage.libs.pari.gen cimport gen, PariInstance
 
-#def pari_bnrinit(gen bnf, gen ideal):
-#    return bnrinit0(bnf.g, ideal.g, 1)
+cdef PariInstance instance = <PariInstance>sage.libs.pari.gen.pari
 
 def pari_bnrisconductor(gen bnf, gen ideal):
     return bnrisconductor0(bnf.g, ideal.g, NULL)
+
+def pari_bnrinit(gen bignf, gen ideal, flag=1):
+    """
+    sage: bnf = pari('bnfinit(y^16-232*y^14+17564*y^12-592696*y^10+10090294*y^8-87937112*y^6+356253116*y^4-482477960*y^2+143400625)')
+    sage: pari_bnrinit(bnf, pari('60'))
+    """
+    sig_on()
+    return instance.new_gen(bnrinit0(bignf.g, ideal.g, flag))

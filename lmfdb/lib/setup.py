@@ -1,15 +1,6 @@
 """
 Build instructions:
 
-First, generate C source files from pari_bnr.pyx:
-
-SAGE=/Applications/Sage-4.8-OSX-64bit-10.6.app/Contents/Resources/sage
-sage -cython -p -a --pre-import sage.all -I "$SAGE/devel/sage" \
-                                         -I "$SAGE/local/include/csage" \
-pari_bnr.pyx
-#-I '/home/vbraun/Code/sage/src' -I'/home/vbraun/Code/sage/include/csage'
-Second, build using this setup.py script:
-
 sage -python setup.py build
 
 The output is then in 
@@ -19,27 +10,55 @@ The output is then in
 
 import distutils.sysconfig, os, sys
 from distutils.core import setup, Extension
+import subprocess
 
-from sage.env import SAGE_ROOT, SAGE_LOCAL
+from sage.env import SAGE_ROOT, SAGE_LOCAL, SAGE_SRC
 
 from setuptools import setup, Extension
 from Cython.Distutils import build_ext
+from Cython.Build import cythonize
+import Cython.Compiler.Options
+import Cython.Compiler.Main
 
-extra_link_args =  ['-L' + SAGE_LOCAL + '/lib', '-lgmp', '-lpari']
-extra_compile_args = ['-I'+ SAGE_LOCAL + '/include/csage']
+if len(sys.argv) > 1 and sys.argv[1] == "sdist":
+    sdist = True
+else:
+    sdist = False
 
-ext_modules = [Extension('pari_bnr', sources=['pari_bnr.c'],
-                         library_dirs=[SAGE_LOCAL + '/lib/'],
-                         libraries=['csage'],
-                         extra_compile_args=extra_compile_args,
-                         extra_link_args=extra_link_args,
-                         language='c' )]
-include_dirs = [SAGE_ROOT + "/local/include/csage/",
-                SAGE_ROOT + "/local/include/",
-                SAGE_ROOT + "/local/include/python2.7",]
 
-setup(name='pari_bnr',
-      author='Pascal Molin',
-      author_email='molin.maths@gmail.com',
-      ext_modules = ext_modules,
-      include_dirs=include_dirs)
+extra_compile_args = [
+    '-I'+ SAGE_SRC,
+    '-I'+ os.path.join(SAGE_LOCAL, 'include', 'csage'),
+]
+
+ext_modules = [
+    Extension('pari_bnr', 
+              sources=['pari_bnr.c'],
+              library_dirs=[SAGE_LOCAL + '/lib/'],
+              libraries=['csage', 'gmp', 'pari'],
+              extra_compile_args=extra_compile_args,
+              language='c' )
+]
+
+include_dirs = [
+    SAGE_SRC,
+    SAGE_LOCAL + "/include/",
+    SAGE_LOCAL + "/include/csage/",
+    SAGE_LOCAL + "/include/python2.7",
+]
+
+
+if not sdist:
+    print 'Cythonizing...'
+    cmd = ['cython', '-p', '-v', '--pre-import', 'sage.all']
+    cmd += extra_compile_args
+    cmd += ['pari_bnr.pyx']
+    subprocess.check_call(cmd)
+    print '... finished, C source code created.'
+    
+
+code = setup(name='pari_bnr',
+             author='Pascal Molin',
+             author_email='molin.maths@gmail.com',
+             ext_modules=ext_modules,
+             include_dirs=include_dirs)
