@@ -6,14 +6,34 @@ class GrossenCharacterLattice:
     def __init__(self,chi):
        
         self.k = chi.number_field()
-        self.tu = self.primitive_root_of_unity()
+        self
+        self.bnf = self.k.pari_bnf()
+        self.modulus = self.chi.modulus()
+        """
+        Now we have to select a basis of infinity type
+        (a,b)  = (a_s), s : K->\C
+                 (b_s), s : K->\C
+        determining
+        chi_i(x) = prod_{s\R} sgn(s(x))^a_s \prod_{s\C} (s(x)/|s(x)|)^a_s
+                 * prod_{s\R} s(x)^ib_s \prod_{s\C} s(x)^ib_s
+        such that
+        chi_a,b(x) = 1 for any unit x = 1 mod m
+        """
+
+    def extend_torsion_units(self):
+        """
+        the infinity type on torsion units
+        z = 1 mod m must be 1
+        """
+        self.tu = z = self.primitive_root_of_unity()
         self.order = self.tu.multiplicative_order()
-        """
-        we have to first correct chi so that
-        on each torsion unit z = 1 mod m
-        chi(z) =
-        """
-        pass
+        # compute the order mod m
+        bnf = self.bnf
+        bid = self.bnr.bid
+        logz = ideallog(bid,z)
+
+        
+                pass
 
 # latticesmallsols(M,y,d,lrange=1,startat=1) = {
 #  my(s,s0,K,nk,L);
