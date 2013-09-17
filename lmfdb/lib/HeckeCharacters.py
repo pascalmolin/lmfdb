@@ -198,6 +198,31 @@ class HeckeChar(DualAbelianGroupElement):
         order = self.multiplicative_order()
         return [ self.__pow__(k) for k in xrange(order) if gcd(k,order) == 1 ]
 
+    def dirichlet_series(self,n,prec=100):
+        k = self.number_field()
+        x = [ 0 for i in xrange(n+1) ]
+        x[1] = 1
+        order = self.multiplicative_order()
+        root = exp(2*I*Pi.n(prec)/order)
+        for p in primes(n):
+            for P in k.primes_above(p):
+                e,f = P.ramification_index(), P.residue_class_degree()
+                pf = p**f
+                chip = self.logvalue(P)
+                if chip is None:
+                    numval = 0
+                else:
+                  expo = int(chip*order)
+                  numval = (root**expo)*pf
+                vp = floor(log(n,p)/f)
+                for l in range(e):
+                    for j in range(vp):
+                        for i in xrange(1,pf):
+                          if  
+                          d[pf*i] *= numval
+              
+        
+    
 """
 k.<a> = NumberField(x^4+7*x^2+13)
 G = RayClassGroup(k,7)
