@@ -118,12 +118,7 @@ class WebIdeals(dict):
             ideal *= self.prime[plabel]**e
         return ideal
 
-    def first_conductors(self, n):
-        g = self.iter_conductors()
-        return [ g.next() for i in xrange(n) ]
-
-    def iter_conductors(self, bound=200):
-        """ first ideals which are conductors """
+    def __iter__(self, bound=200, pari=False):
         bnf = self.k.pari_bnf()                                                           
         oldbound = 0
         while True:
@@ -131,11 +126,23 @@ class WebIdeals(dict):
             for l in L:   
                 if l == []: next                                                           
                 for ideal in l:                                            
-                    if pari_bnrisconductor(bnf,ideal):
+                    if pari:
+                        yield ideal
+                    else:
                         yield self.__call__(ideal)
             """ double the range if one needs more ideal """
             oldbound = bound
             bound *=2
+
+    def first_conductors(self, n=25):
+        bnf = self.k.pari_bnf()                                                           
+        L = []
+        for ideal in self.__iter__(pari=True):
+            if pari_bnrisconductor(bnf,ideal):
+                L.append(self(ideal))
+                if len(L) == n:
+                    break
+        return L
 
     def __call__(self, ideal):
         if isinstance(ideal, (str,unicode)):

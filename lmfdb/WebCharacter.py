@@ -284,7 +284,7 @@ class WebHecke(WebCharObject):
     @property
     def generators(self):
         """ use representative ideals """
-        return self.textuple( map(self.ideal2tex, self.G.gen_ideals() ), tag=False )
+        return self.textuple( [ self.ids(g).tex for g in  self.G.gen_ideals() ], tag=True )
 
     """ labeling conventions are put here """
 
@@ -326,38 +326,19 @@ class WebHecke(WebCharObject):
     #group2tex = ideal2tex
     #group2label = ideal2label
     #label2group = label2ideal
-    @staticmethod
-    def group2tex(x, tag=True):
-        if not isinstance(x, tuple):
-            x = x.exponents()
-        #s =  '\cdot '.join('g_{%i}^{%i}'%(i,e) for i,e in enumerate(x) if e>0)
-        s = []
-        for i,e in enumerate(x):
-            if e > 0:
-                if e==1:
-                    s.append('g_{%i}'%i)
-                else:
-                    s.append('g_{%i}^{%i}'%(i,e))
-        s =  '\cdot '.join(s)
-        if s == '': s = '1'
-        if tag: s = '\(%s\)'%s
+    def group2tex(self, x, tag=True):
+        s = self.ids(x).tex
+        if tag:
+            s = '\(%s\)'%s
         return s
 
-    @staticmethod
-    def group2label(x):
-        return number2label(x.exponents())
+    def group2label(self, x):
+        s = self.ids(x).label
+        return s
 
     def label2group(self,x):
-        """ x is either an element of k or a tuple of ints or an ideal """
-        if x.count('.'):
-            x = self.label2ideal(x)
-        elif x.count('a'):
-            a = self.k.gen()
-            x = evalpolelt(x,a,'a')
-        elif x.count(','):
-            x = tuple(map(int,x.split(',')))
-        return self.G(x)
-
+        return self.ids(x).ideal
+        
     @staticmethod
     def number2label(number):
         return '.'.join(map(str,number))
@@ -383,8 +364,8 @@ class WebHecke(WebCharObject):
     def Gelts(self):
         res = []
         c = 1
-        for x in self.G.iter_exponents():
-            res.append(x)
+        for x in self.ids:
+            res.append(x.ideal)
             c += 1
             if c > self.maxcols:
                 self.coltruncate = True
@@ -977,7 +958,7 @@ class WebHeckeCharacter(WebChar, WebHecke):
 
     @property
     def title(self):
-      return r"Hecke Character: %s modulo %s" % (self.texname, self.modulus)
+      return r"Finite order Hecke Character: %s modulo %s" % (self.texname, self.modulus)
     
     @property
     def codecond(self):
