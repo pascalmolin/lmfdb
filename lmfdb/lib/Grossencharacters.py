@@ -1,5 +1,6 @@
 from sage.all import *
 from HeckeCharacters import *
+from pari_bnr import *
 
 class GrossenCharacterLattice:
 
@@ -31,9 +32,7 @@ class GrossenCharacterLattice:
         bnf = self.bnf
         bid = self.bnr.bid
         logz = ideallog(bid,z)
-
-        
-                pass
+        pass
 
 # latticesmallsols(M,y,d,lrange=1,startat=1) = {
 #  my(s,s0,K,nk,L);

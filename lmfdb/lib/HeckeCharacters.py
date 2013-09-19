@@ -117,6 +117,7 @@ class HeckeChar(DualAbelianGroupElement):
         DualAbelianGroupElement.__init__(self, x, hecke_char_group)
         self.__repr = None
         self.__element_vector = x
+        self.base_ring = CC
 
     #def __repr__(self):
     #    #return "Hecke character of index %s over %s" \
@@ -199,31 +200,40 @@ class HeckeChar(DualAbelianGroupElement):
         return [ self.__pow__(k) for k in xrange(order) if gcd(k,order) == 1 ]
 
     def dirichlet_series(self,n,prec=100):
+        """ compute n coefficients of Dirichlet series """
         k = self.number_field()
-        x = [ 0 for i in xrange(n+1) ]
-        x[1] = 1
+        a = [ 0 for i in xrange(n+1) ]
+        a[1] = 1
         order = self.multiplicative_order()
-        root = exp(2*I*Pi.n(prec)/order)
+        root = exp(2*I*pi.n(prec)/order)
+        X = gen(PowerSeriesRing(root.parent(),'X'))
         for p in primes(n):
+            """ compute Euler factor at p """
+            maxpow = floor(log(n,p));
+            Fp = 1+O(X**(maxpow+1))
             for P in k.primes_above(p):
                 e,f = P.ramification_index(), P.residue_class_degree()
-                pf = p**f
                 chip = self.logvalue(P)
-                if chip is None:
-                    numval = 0
-                else:
-                  expo = int(chip*order)
-                  numval = (root**expo)*pf
-                vp = floor(log(n,p)/f)
-                for l in range(e):
-                    for j in range(vp):
-                        for i in xrange(1,pf):
-                          if  
-                          d[pf*i] *= numval
-              
+                if chip:
+                    Fp *= (1-root**chip*X**f)**e
+            """ expand the series """
+            ap = 1/Fp
+            if ap == 1:
+                next
+            """ sieve on values """
+            for l in xrange(1,n//p+1):
+                v = valuation(l,p)
+                m = l // p**v
+                a[l*p] = a[m] * ap[v+1]
+        return a
         
     
 """
+load('HeckeCharacters.py')
+chi = RayClassGroup(k,13).dual_group()(3)
+chi.dirichlet_series(20)
+
+
 k.<a> = NumberField(x^4+7*x^2+13)
 G = RayClassGroup(k,7)
 H = G.dual_group()
