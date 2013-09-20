@@ -1,31 +1,46 @@
 # -*- coding: utf-8 -*-
 # HeckeCharacters.py
 
-from sage.all import *
+from sage.all import ZZ, PowerSeriesRing, valuation
 from sage.groups.abelian_gps.abelian_group import AbelianGroup_class
 from sage.groups.abelian_gps.abelian_group_element import AbelianGroupElement
 from sage.groups.abelian_gps.dual_abelian_group import DualAbelianGroup_class, DualAbelianGroupElement
 from sage.groups.abelian_gps.dual_abelian_group import DualAbelianGroup_class, DualAbelianGroupElement
+from pari_bnr import pari_bnrinit, pari_bnrisprincipal, pari_bnrconductorofchar
 
 class RayClassGroup(AbelianGroup_class):
+    """
+    sage: k = NumberField(x^4-x^3+7,'a')
+    sage: mod = k.ideal(25)
+    sage: G = RayClassGroup(k,mod)
+    sage: G.invariants()
+    (200, 5, 5)
+    """
     def __init__(self, number_field, mod_ideal = 1, mod_archimedean = None):
         if mod_archimedean == None:
             mod_archimedean = [0] * len(number_field.real_places())
         mod_ideal = number_field.ideal( mod_ideal )
 
-        bnf = gp(number_field.pari_bnf())
+        bnf = number_field.pari_bnf()
         # Use PARI to compute ray class group
-        bnr = bnf.bnrinit([mod_ideal, mod_archimedean],1)
-        invariants = bnr[5][2]         # bnr.clgp.cyc
+        bnr = pari_bnrinit(bnf,pari([mod_ideal,mod_archimedean]),flag=1)
+        # using pari index from 1
+        # bnr[1] = bnf
+        # bnr[2] = bid
+        # bnr[3] = El ???
+        # bnr[4] = gens
+        # bnr[5] = clgp,    clgp[2]=cyc, clgp[3] = gens
+        # bnr[6] = mat RU
+        invariants = bnr[4][1]         # bnr.clgp.cyc
         invariants = tuple([ ZZ(x) for x in invariants ])
         names = tuple([ "I%i"%i for i in range(len(invariants)) ])
-        generators = bnr[5][3]         # bnr.gen = bnr.clgp[3]
-        generators = [ number_field.ideal(pari(x)) for x in generators ]
+        generators = bnr[4][2]         # bnr.gen = bnr.clgp[3]
+        generators = [ number_field.ideal(x) for x in generators ]
 
         AbelianGroup_class.__init__(self, invariants, names)
         self.__number_field = number_field
         self.__bnr = bnr
-        self.__pari_mod = bnr[2][1]
+        #self.__pari_mod = bnr[1][0]
         self.__mod_ideal = mod_ideal
         self.__mod_arch = mod_archimedean
         self.__generators = generators
@@ -35,7 +50,7 @@ class RayClassGroup(AbelianGroup_class):
 
     def log(self,I):
         # Use PARI to compute class of given ideal
-        g = self.__bnr.bnrisprincipal(I, flag = 0)
+        g = pari_bnrisprincipal(self.__bnr,pari(I), flag = 0)
         g = [ ZZ(x) for x in g ]
         return g
 
@@ -53,6 +68,9 @@ class RayClassGroup(AbelianGroup_class):
             return AbelianGroupElement(args[0], self)
         except:
             I = self.__number_field.ideal(*args, **kwargs)
+            ### FIXME: should be faster
+            if not I.is_coprime(self.__mod_ideal):
+                return None
             return AbelianGroupElement(self.log(I), self)
 
     @cached_method
@@ -84,6 +102,10 @@ class RayClassGroup(AbelianGroup_class):
         for e in self.iter_exponents():
             yield self.exp(e)
 
+    def character(self, exponents):
+        return HeckeChar(self.dual_group(), exponents)
+
+
 class HeckeCharGroup(DualAbelianGroup_class):
     def __init__(self, ray_class_group, base_ring):
         names = tuple([ "chi%i"%i for i in range(ray_class_group.ngens()) ])
@@ -105,7 +127,7 @@ class HeckeCharGroup(DualAbelianGroup_class):
     #def list(self):
     #    return [ HeckeChar(self, c.list()) for c in DualAbelianGroup_class.list(self) ]
 
-    def list_primitive(self):
+    def primitive_characters(self):
         return [chi for chi in self.list() if chi.is_primitive() ]
 
 class HeckeChar(DualAbelianGroupElement):
@@ -132,8 +154,16 @@ class HeckeChar(DualAbelianGroupElement):
 
     @cached_method
     def conductor(self):
+        """
+        sage: k = NumberField(x^4-x^3+7,'a')
+        sage: mod = k.ideal(25)
+        sage: chi = RayClassGroup(k,mod).character((20,1,0))
+        sage: chi.conductor()
+        Fractional ideal (-5*a^3 + 5*a + 20)
+        """
         bnr = self.parent().group().bnr()
-        pari_cond = pari(bnr.bnrconductorofchar(self.list()))
+        chi = pari(self.exponents())
+        pari_cond = pari_bnrconductorofchar(bnr,pari(chi))
         finite, arch = pari_cond
         return self.number_field().ideal(finite)
 
@@ -141,9 +171,14 @@ class HeckeChar(DualAbelianGroupElement):
         return self.conductor() == self.modulus()
 
     def logvalue(self, x):
-        try:
-            E = self.parent().group()(x)
-        except:
+        """
+        sage: k = NumberField(x^4-x^3+7,'a')
+        sage: mod = k.ideal(5)
+        sage: chi = RayClassGroup(k,mod).dual_group().primitive_characters()[3]
+        sage: chi.logvalue(5)
+        """
+        E = self.parent().group()(x)
+        if E == None:
             return None
         E = E.exponents()
         F = self.exponents()
@@ -200,7 +235,14 @@ class HeckeChar(DualAbelianGroupElement):
         return [ self.__pow__(k) for k in xrange(order) if gcd(k,order) == 1 ]
 
     def dirichlet_series(self,n,prec=100):
-        """ compute n coefficients of Dirichlet series """
+        """ compute n coefficients of Dirichlet series
+
+        sage: k = NumberField(x^4-x^3+7,'a')
+        sage: mod = k.ideal(5)
+        sage: chi = RayClassGroup(k,mod).dual_group().primitive_characters()[3]
+        sage: sum(chi.dirichlet_series(300))
+        98.304903507092841699573819276 + 97.335900978401476755022186609*I
+        """
         k = self.number_field()
         a = [ 0 for i in xrange(n+1) ]
         a[1] = 1
