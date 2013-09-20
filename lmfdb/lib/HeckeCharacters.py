@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # HeckeCharacters.py
 
-from sage.all import ZZ, PowerSeriesRing, valuation
+from sage.all import ZZ, PowerSeriesRing, valuation, cached_method, \
+    pari, xmrange, CC, Integer, gcd
 from sage.groups.abelian_gps.abelian_group import AbelianGroup_class
 from sage.groups.abelian_gps.abelian_group_element import AbelianGroupElement
 from sage.groups.abelian_gps.dual_abelian_group import DualAbelianGroup_class, DualAbelianGroupElement
@@ -139,7 +140,7 @@ class HeckeChar(DualAbelianGroupElement):
         DualAbelianGroupElement.__init__(self, x, hecke_char_group)
         self.__repr = None
         self.__element_vector = x
-        self.base_ring = CC
+        self.base_ring = CC # this is simpler
 
     #def __repr__(self):
     #    #return "Hecke character of index %s over %s" \

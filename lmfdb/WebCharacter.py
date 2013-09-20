@@ -298,6 +298,11 @@ class WebHecke(WebCharObject):
         else:
             return s
 
+    def char2html(c):
+        number = ','.join(map(str,c.exponents()))
+        s = r'&chi;[%s]'%(number)
+        return s
+
     def _char_desc(self, c, modlabel=None, prim=None):
         """ c is a Hecke character of modulus self.modulus
             unless modlabel is specified
@@ -713,12 +718,12 @@ class WebDirichletCharacter(WebChar, WebDirichlet):
         if self.modulus == 1:
             return ('',{})
         mod, num = self.prevchar(self.modulus, self.number)
-        return (self.char2tex(mod, num), {'type':'Dirichlet', 'modulus':mod,'number':num})
+        return (self.char2tex(mod, num), url_character(type='Dirichlet', modulus=mod,number=num) )
 
     @property
     def next(self):
         mod, num = self.nextchar(self.modulus, self.number)
-        return (self.char2tex(mod, num), {'type':'Dirichlet', 'modulus':mod,'number':num})
+        return (self.char2tex(mod, num), url_character(type='Dirichlet', modulus=mod,number=num) )
 
     @property
     def indlabel(self):

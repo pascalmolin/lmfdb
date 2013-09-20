@@ -1,36 +1,37 @@
 from lmfdb.base import LmfdbTest
-from lmfdb.WebCharacter import *
-from lmfdb.utils import url_character
 import unittest2
 
 class WebCharacterTest(LmfdbTest):
 
   def test_Dirichletmethods(self):
+      from lmfdb.WebCharacter import WebDirichlet
       modlabel, numlabel = 14, 5
       mod = WebDirichlet.label2ideal(modlabel)
       assert WebDirichlet.ideal2label(mod) == modlabel
       num = WebDirichlet.label2number(numlabel)
       assert WebDirichlet.number2label(num) == numlabel
     
+  @unittest2.skip("this has to be a WebIdeals test")
   def test_Heckemethods(self):
-      from sage.all import *
+      from lmfdb.WebCharacter import WebHecke
+      from sage.all import var, NumberField
       x = var('x')
       k = NumberField(x**3-x**2+x+1,'a')
       modlabel, numlabel = '82.-5a0+1a2', '5.3.3'
-      mod = WebHecke.label2ideal(k, modlabel)
+      mod = WebHecke.label2ideal(modlabel)
       assert WebHecke.ideal2label(mod) == modlabel
       num = WebHecke.label2number(numlabel)
       assert WebHecke.number2label(num) == numlabel
 
 class UrlCharacterTest(LmfdbTest):
   
-    pass
-    # FIXME: this test does not work, why ???
-    #def test_url_character(self):
-    #    assert url_character() == '/Character/'
-    #    assert url_character(type='Hecke') == '/Character/Hecke'
-    #    assert url_character(type='Dirichlet') == '/Character/Dirichlet'
-    #    assert url_character(type='Dirichlet', modulus='132') == '/Character/Dirichlet/132'
+    @unittest2.skip("need to fix this one")
+    def test_url_character(self):
+        from lmfdb.utils import url_character
+        assert url_character() == '/Character/'
+        assert url_character(type='Hecke') == '/Character/Hecke'
+        assert url_character(type='Dirichlet') == '/Character/Dirichlet'
+        assert url_character(type='Dirichlet', modulus='132') == '/Character/Dirichlet/132'
 
 class DirichletSearchTest(LmfdbTest):
 
@@ -149,17 +150,18 @@ class HeckeCharactersTest(LmfdbTest):
         assert 'C_{5}' in W.data
 
     def test_heckegroup(self):
-        W = self.tc.get('/Character/Hecke/3.1.44.1/4.0')
+        W = self.tc.get('/Character/Hecke/3.1.44.1/2_1^6')
         assert 'Related objects' in W.data
         assert 'primitive' in W.data
 
     def test_heckechar(self):
         #W = self.tc.get('/Character/Hecke/7.3.674057.1')
-        W = self.tc.get('/Character/Hecke/2.0.4.1/5./2')
+        W = self.tc.get('/Character/Hecke/2.0.4.1/5_1a.5_1b/2')
         assert 'Related objects' in W.data
         assert 'primitive' in W.data
 
+    @unittest2.skip("not yet")
     def test_hecke_calc(self):
-        W = self.tc.get('/Character/calc-value/Hecke/2.0.4.1/5./1?val=1-a')
+        W = self.tc.get('/Character/calc-value/Hecke/2.0.4.1/5_1a.5_1b/1?val=1-a')
         assert '(1-a)=i' in W.data
 
