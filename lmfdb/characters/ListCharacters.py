@@ -1,10 +1,7 @@
 # -*- coding: utf8 -*-
 # ListCharacters.py
 
-import re
-
 from flask import render_template, url_for, make_response
-from sage.all import *
 import tempfile
 import os
 import pymongo

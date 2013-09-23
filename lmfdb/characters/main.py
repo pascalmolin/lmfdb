@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 # Characters.py
 
-import re
-
 from lmfdb.base import app, r
 import flask
-from flask import Flask, session, g, render_template, url_for, make_response, request, redirect
-from sage.all import *
+from flask import Flask, session, g, render_template, url_for, make_response, \
+    request, redirect
 import tempfile
 import os
 from pymongo import ASCENDING

@@ -1,4 +1,3 @@
-from sage.all import *
 from HeckeCharacters import *
 from pari_bnr import *
 

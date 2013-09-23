@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-import math
-# from Lfunctionutilities import pair2complex, splitcoeff, seriescoeff
-from sage.all import *
-import re
-from lmfdb.utils import parse_range, make_logger, url_character
-logger = make_logger("DC")
+from sage.rings.arith import gcd
+from sage.modular.dirichlet import DirichletGroup
+from lmfdb.utils import make_logger, url_character
 from WebNumberField import WebNumberField
 from WebIdeals import WebIdeals
 try:
@@ -12,6 +9,8 @@ try:
 except:
     logger.critical("dirichlet_conrey.pyx cython file is not available ...")
 from lib.HeckeCharacters import *
+
+logger = make_logger("DC")
 
 def evalpolelt(label,gen,genlabel='a'):
     """ label is a compact polynomial expression in genlabel                    
@@ -68,6 +67,7 @@ class WebCharObject:
 
     @staticmethod
     def texlogvalue(x, tag=False):
+        from sage.rings.rational import Rational
         if x == None:
             return 0
         if not isinstance(x, Rational):
