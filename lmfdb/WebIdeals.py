@@ -1,5 +1,5 @@
-from sage.all import *
-sys.path.insert(0,os.path.abspath('./lib/'))
+#sys.path.insert(0,os.path.abspath('./lib/'))
+from sage.all import primes
 from pari_bnr import pari_bnrisconductor
 
 class WebIdeals(dict):
