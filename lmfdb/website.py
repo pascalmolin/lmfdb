@@ -13,7 +13,7 @@ add --debug if you are developing (auto-restart, full stacktrace in browser, ...
 from base import *
 
 import pages
-import hilbert_modular_form
+import hilbert_modular_forms
 import siegel_modular_forms
 import modular_forms
 import elliptic_curves
@@ -37,6 +37,7 @@ import crystals
 import permutations
 import hypergm
 import motives
+import riemann
 import logging
 
 import raw
@@ -154,26 +155,6 @@ def form_example():
     sidebar = [('topic1', [("abc", "#"), ("def", "#")]), ("topic2", [("ghi", "#"), ("jkl", "#")])]
     info = {'sidebar': sidebar}
     return render_template("form.html", info=info)
-
-@app.route('/ModularForm/GSp/Q')
-@app.route('/ModularForm/GSp/Q/<group>')
-@app.route('/ModularForm/GSp/Q/<group>/<page>')
-@app.route('/ModularForm/GSp/Q/<group>/<page>/<weight>')
-@app.route('/ModularForm/GSp/Q/<group>/<page>/<weight>/<form>')
-def ModularForm_GSp4_Q_top_level(group=None, page=None, weight=None, form=None):
-    args = request.args
-    if group:
-        args = {}
-        for k in request.args:
-            args[k] = request.args[k]
-        args['group'] = group
-        if None != weight:
-            page = 'specimen'
-        args['page'] = page
-        if 'specimen' == page:
-            args['weight'] = weight
-            args['form'] = form
-    return siegel_modular_forms.siegel_modular_form.render_webpage(args)
 
 
 @app.route('/example_plot')

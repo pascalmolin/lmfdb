@@ -1,7 +1,9 @@
 {% extends 'homepage.html' %}
-
 {% block content %}
 
-{{ info.blah }}
+{% include [ group, '_gen_rel.html']|join %}
 
 {% endblock %}
+
+
+
