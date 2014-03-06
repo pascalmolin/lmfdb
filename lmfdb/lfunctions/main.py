@@ -46,7 +46,7 @@ def l_function_dirichlet_browse_page():
 # Degree 2 L-functions browsing page ##############################################
 @l_function_page.route("/degree2/")
 def l_function_degree2_browse_page():
-    info = {"bread": get_bread(1, [])}
+    info = {"bread": get_bread(2, [])}
 #    info["minModDefault"] = 1
 #    info["maxModDefault"] = 20
 #    info["maxOrder"] = 19
@@ -572,9 +572,10 @@ def initLfunction(L, args, request):
                 info['friends'].append(('Symmetric %s' % ordinal(j), friendlink3))
 
     elif L.Ltype() == 'siegelnonlift' or L.Ltype() == 'siegeleisenstein' or L.Ltype() == 'siegelklingeneisenstein' or L.Ltype() == 'siegelmaasslift':
+        friendlink = friendlink.rpartition('/')[0] #strip off embedding number for L-function
         weight = str(L.weight)
         number = str(L.number)
-        info['friends'] = [('Siegel Modular Form', friendlink)]
+        info['friends'] = [('Siegel Modular Form ' + weight + '_' + L.orbit, friendlink)]
 
     elif L.Ltype() == "artin":
         # info['zeroeslink'] = ''
@@ -973,11 +974,11 @@ def processMaassNavigation(numrecs=35):
     Produces a table of numrecs Maassforms with Fourier coefficients in the database
     """
     DB = LfunctionDatabase.getMaassDb()
-    s = '<h5>The L-functions attached to the first 4 eigenvalues of weight 0 Maass newforms on Hecke congruence groups $\Gamma_0(N)$ with trivial character</h5>'
+    s = '<h5>The L-functions attached to the first 4 weight 0 Maass newforms with trivial character on Hecke congruence groups $\Gamma_0(N)$</h5>'
     s += '<table>\n'
     i = 0
     maxinlevel = 4
-    for level in [1, 2, 3, 4, 5, 6, 7]:
+    for level in [1, 2, 3, 4, 5, 6, 7, 9]:
         j = 0
         s += '<tr>\n'
         s += '<td><bold>N={0}:</bold></td>\n'.format(level)
