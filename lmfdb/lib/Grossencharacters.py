@@ -4,6 +4,9 @@ from pari_bnr import *
 class GrossenCharacterLattice:
 
     def __init__(self,chi):
+        """
+        chi is a finite order Hecke character
+        """
        
         self.k = chi.number_field()
         self

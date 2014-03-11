@@ -43,7 +43,6 @@ def pari_bnrisprincipal(gen bnr, gen ideal, flag=0):
     sig_on()
     return instance.new_gen(bnrisprincipal(bnr.g, ideal.g, flag))
 
-
 def pari_bnrconductorofchar(gen bnr, gen chi):
     """
     sage: bnf = pari('bnfinit(y^7+y^2+131,1)')
