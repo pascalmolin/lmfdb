@@ -1,7 +1,6 @@
 /*for tests*/
 k = bnfinit(x^4+x^3+7);
 
-
 /*
  compute a list of first prime decompositions
  over number field k
@@ -111,6 +110,7 @@ embeval(k,z) = {
   my(emb = k.roots);
   vector(#emb,j, sum(k=0,d,polcoeff(a,k)*emb[j]^k));
 }
+
 /* find grossencharacters having Dirichlet part chi */
 
 
@@ -229,7 +229,6 @@ gcdirseries(G,gc,pmax=500) = {
     );
 }
 
-  
 do(P=x^4+x^3+7,mod=14,chi) = {
   k = bnfinit(P,1);
   G = dcinit(k,mod);
@@ -242,7 +241,3 @@ do(P=x^4+x^3+7,mod=14,chi) = {
   G[2].cyc;
   );
 }
-  
-    
-
-
