@@ -162,11 +162,7 @@ class HeckeCharactersTest(LmfdbTest):
         assert 'Related objects' in W.data
         assert 'primitive' in W.data
 
-<<<<<<< HEAD
-    @unittest2.skip("not yet")
-=======
     @unittest2.skip("hecke characters broken with sage 6.1")
->>>>>>> master
     def test_hecke_calc(self):
         W = self.tc.get('/Character/calc-value/Hecke/2.0.4.1/5_1a.5_1b/1?val=1-a')
         assert '(1-a)=i' in W.data
