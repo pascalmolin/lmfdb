@@ -952,7 +952,7 @@ class WebHeckeCharacter(WebChar, WebHecke):
     @property
     def codeinit(self):
         kpol = self.k.polynomial()
-        return [('sage', '\n'.join(['k.<a> = NumberField(%s)'%kpol,
+        return [('sage', '\n'.join(['k.&lt;a&gt; = NumberField(%s)'%kpol,
                           'm = k.ideal(%s)'%self.modulus,
                           'G = RayClassGroup(k,m)',
                           'H = G.dual_group()',
@@ -1031,7 +1031,7 @@ class WebHeckeGroup(WebCharGroup, WebHecke):
     @property
     def codeinit(self):
         kpol = self.k.polynomial()
-        return [('sage', '\n'.join(['k.<a> = NumberField(%s)'%kpol,
+        return [('sage', '\n'.join(['k.&lt;a&gt; = NumberField(%s)'%kpol,
                           'm = k.ideal(%s)'%self.modulus,
                           'G = RayClassGroup(k,m)',
                           'H = G.dual_group()' ])),
