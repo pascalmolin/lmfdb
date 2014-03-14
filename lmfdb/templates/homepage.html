@@ -20,6 +20,12 @@
           <a href="{{ feedbackpage }}" target="_blank">
              Feedback</a>
             &middot;
+          {% if g.show_menu %}
+             <a href="{{ url_for("menutoggle", show=False)}}">Hide Menu</a>
+          {% else %}
+             <a href="{{ url_for("menutoggle", show=True)}}">Show Menu</a>
+          {% endif %}
+            &middot;
           {% if user_is_admin -%}
             <a href="{{ url_for('users.register') }}">Registertokens</a>
             &middot;
@@ -55,6 +61,7 @@
 </div>
 
 {% block sidebar -%} 
+{% if g.show_menu %}
  {% macro entry(title, entries) -%}
    {% if entries %}
     <h2>{{ title }}</h2>
@@ -65,6 +72,13 @@
     </ul>
    {% endif %}
  {%- endmacro %}
+
+   {% if BETA %}
+<style type="text/css">
+#sidebar .test { color:rgb(150,0,0);}
+#sidebar .test a { color:rgb(150,0,0);}
+</style>
+   {% endif %}
 
 
 <div id="sidebar">
@@ -120,21 +134,36 @@
     <a class="lfunction"  href="{{url_for('l_functions.l_function_degree_page', degree= 'degree4')}}">4</a>
     </span>
    </li>
+  {% if BETA %}
+  <li class="test">tensor products</li>
+    {% endif %}
   </ul>
 
   <h2>Elliptic Curves</h2>
-  <ul>
-   <li><a href="{{ url_for('EC_toplevel') }}  ">Elliptic Curves/\(\Q\)</a>
+  <ul class="list">
+   {% if BETA %}
+   <li><a href="{{ url_for('EC_toplevel') }}">over \(\Q\)</a></li>
+   <li class="test">over \(\Q(\sqrt{d})\)</li>
+   <li class="test">over \(\Q(\sqrt{-d})\)</li>
+   <li class="test">over other fields</li>
+    {% else %}
+   <li><a href="{{ url_for('EC_toplevel') }}  ">Elliptic Curves/\(\Q\)</a></li>
+    {% endif %}
   </ul>
 
   <h2> Fields</h2>
-    <ul>
+    <ul class="list">
       <li><a class = "number_fields" href="{{ url_for('number_fields.number_field_render_webpage') }}">Global Number Fields</a></li>
+      <li class="test"><a class="artin_representations" href="{{ url_for('artin_representations.index') }}">Artin Representations</a></li>
       <li><a href="{{ url_for('local_fields.index') }}">Local Number Fields</a></li>
       <li><a href="{{ url_for('galois_groups.index') }}">Galois Groups</a></li>
       {#  Please keep the commented part, I might reinstate some of it POD
       #<li><a class = "number_field_galois_groups" href="{{ url_for('number_field_galois_groups.index') }}">Galois Groups (only logged in)</a></li>
       #}
+   {% if BETA %}
+      <li class="test">Finite</li>
+      <li class="test">Function</li>
+   {% endif %}
     </ul>
 
     <h2 class="link"> <a href='{{ url_character() }}'> Characters</a></h2>
@@ -147,13 +176,30 @@
    {% endif %}
   </ul>
 
+   {% if BETA %}
+    <h2> Varieties</h2>
+  <ul class="list">
+    <li class="test"><a href="">Hyperelliptic curves</a></li>
+    <li class="test"><a href="">Abelian surfaces</a></li>
+    <li class="test"><a href="">K3 surfaces</a></li>
+    <li class="test"><a href="">Calbi-Yau 3-folds</a></li>
+  </ul>
+   {% endif %}
+
   <h2 class="link">
        <a class="mf"    href="{{ url_for('mf.modular_form_main_page') }}">Modular Forms</a>
   </h2>
-  <ul>
+  <ul class="list">
    <li><a class="emf"  href="{{ url_for('emf.render_elliptic_modular_forms') }}">Classical, $\GL(2)/\Q$</a></li>
    <li><a class="mwf"  href="{{ url_for('mwf.render_maass_waveforms') }}">Maass, $\GL(2)/\Q$</a></li>
    <li><a              href="{{ url_for('hmf.hilbert_modular_form_render_webpage') }}">Hilbert</a></li>
+   {% if BETA %}
+   <li class="test">Bianchi</li>
+   <li class="test">Cohomological, \(\GL(3)/\Q\)</li>
+   <li class="test">Maass, \(\GL(3)/\Q\)</li>
+   <li class="test">U(2,1)</li>
+   {% endif %}
+
    <li><a              href="{{ url_for('ModularForm_GSp4_Q_top_level') }}">Siegel</a> </li>
   </ul>
    {# <li><a href="{{ url_for('quadratic_twists') }}">Quadratic Twists</a></li> #}
@@ -165,10 +211,28 @@
   </ul>
 #}
 	
+<!--
 	<h2 class="link">
 	    <a class="artin_representations" href="{{ url_for('artin_representations.index') }}">Artin Representations</a>
 	</h2>
+-->
   
+  {% if BETA %}
+<!--
+      <h2 class="link"> <a href='{{ url_for("hypergm.index") }}'>Hypergeometric motives</a></h2>
+-->
+      <h2>Motives</h2>
+<ul class="list">
+<li class="test">hypergeometric/\(\Q\)</li>
+<li class="test">hypergeometric/\(\Q(\sqrt{d})\)</li>
+<li class="test">$G_2$</li>
+
+ <h2>Representations</h2>
+<ul class="list">
+<li class="test">Galois</li>
+<li class="test">Automorphic</li>
+  {% endif %}
+
 
   <h2>Zeros of L-functions</h2>
    <ul>
@@ -177,7 +241,6 @@
    </ul>
 
   {% if BETA %}
-      <h2 class="link"> <a href='{{ url_for("hypergm.index") }}'>Hypergeometric motives</a></h2>
       <h2 class="link"> <a href='{{ url_for("stieltjes.stieltjes_constants") }}'>Stieltjes constants</a></h2>
   {% endif %}
 
@@ -194,6 +257,11 @@
  {%- endif %}
 
 </div>
+{% else %}
+<style type="text/css">
+#main { margin: 0; }
+</style>
+{% endif %} {# of g.show_menu #}
 {%- endblock sidebar %}
 
  {% macro rightnavig(title, entries) -%}

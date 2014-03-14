@@ -273,7 +273,6 @@ class Lfunction_EMF(Lfunction):
             raise KeyError("You have to supply weight, level, character, " +
                            "label and number for an " +
                            "elliptic modular form L-function")
-        logger.debug(str(args))
 
         modform_translation_limit = 101
 
@@ -296,7 +295,7 @@ class Lfunction_EMF(Lfunction):
         try:
             self.MF = WebNewForm(k = self.weight, N = self.level,
                                  chi = self.character, label = self.label, 
-                                 prec = self.numcoeff, verbose=1)
+                                 prec = self.numcoeff, verbose=0)
         except:
             raise KeyError("No data available yet for this modular form, so" +
                            " not able to compute its L-function")
@@ -638,15 +637,14 @@ class Lfunction_Dirichlet(Lfunction):
         # Create the Dirichlet character
         self.web_chi = WebDirichletCharacter( modulus=self.charactermodulus,
                                 number = self.characternumber)
-        chi = self.web_chi.chi_sage
-        self.chi_sage = chi
+        chi = self.web_chi.chi
         self.motivic_weight = 0
 
         if chi.is_primitive():
 
             # Extract the L-function information from the Dirichlet character
             # Warning: will give nonsense if character is not primitive
-            aa = int((1 - chi(-1)) / 2)   # usually denoted \frak a
+            aa = 1 - chi.is_even()   # usually denoted \frak a
             self.quasidegree = 1
             self.mu_fe = [aa]
             self.nu_fe = []
@@ -666,26 +664,21 @@ class Lfunction_Dirichlet(Lfunction):
             self.level = self.charactermodulus
             self.numcoeff = self.coefficient_period
 
-            self.dirichlet_coefficients = []
-            for n in range(1, self.numcoeff):
-                self.dirichlet_coefficients.append(chi(n).n())
+            self.dirichlet_coefficients = [ CC(z.real,z.imag) for z in chi.values() ]
 
             self.poles = []
             self.residues = []
 
             # Determine if the character is real
             # (i.e., if the L-function is selfdual)
-            chivals = chi.values_on_gens()
-            self.selfdual = True
-            for v in chivals:
-                if abs(imag_part(v)) > 0.0001:
-                    self.selfdual = False
+
+            self.selfdual = chi.multiplicative_order() <= 2
 
             if self.selfdual:
                 self.coefficient_type = 2
                 for n in range(0, self.numcoeff - 1):
                     self.dirichlet_coefficients[n] = int(
-                        round(self.dirichlet_coefficients[n]))
+                        round(real(self.dirichlet_coefficients[n])))
             else:
                 self.coefficient_type = 3
 
@@ -705,7 +698,7 @@ class Lfunction_Dirichlet(Lfunction):
                           str(self.charactermodulus) + ", number " +
                           str(self.characternumber))
 
-            self.sageLfunction = lc.Lfunction_from_character(chi)
+            self.sageLfunction = lc.Lfunction_from_character(chi.sage_character())
 
         else:  # Character not primitive
             raise Exception("The dirichlet character you choose is " +
