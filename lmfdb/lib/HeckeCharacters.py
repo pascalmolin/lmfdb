@@ -72,7 +72,7 @@ class RayClassGroup(AbelianGroup_class):
             ### FIXME: should be faster
             if not I.is_coprime(self.__mod_ideal):
                 return None
-            return AbelianGroupElement(self.log(I), self)
+            return AbelianGroupElement(self, self.log(I))
 
     @cached_method
     def dual_group(self, base_ring=None):
@@ -137,7 +137,7 @@ class HeckeChar(DualAbelianGroupElement):
         ray_class_group = hecke_char_group.group()
         if not isinstance(x, (list,tuple)) or len(x) != ray_class_group.ngens():
             x = ray_class_group(x).list()
-        DualAbelianGroupElement.__init__(self, x, hecke_char_group)
+        DualAbelianGroupElement.__init__(self, hecke_char_group, x)
         self.__repr = None
         self.__element_vector = x
         self.base_ring = CC # this is simpler

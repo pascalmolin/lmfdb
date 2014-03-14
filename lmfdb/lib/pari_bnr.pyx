@@ -12,9 +12,10 @@ cdef extern from 'pari/pari.h':
     GEN bnrconductorofchar(GEN bnr, GEN chi)
 
 import sage.libs.pari.gen
-from sage.libs.pari.gen cimport gen, PariInstance
+from sage.libs.pari.gen cimport gen
+from sage.libs.pari.pari_instance cimport PariInstance
 
-cdef PariInstance instance = <PariInstance>sage.libs.pari.gen.pari
+cdef PariInstance instance = <PariInstance>sage.libs.pari.pari_instance.pari
 
 def pari_bnrisconductor(gen bnf, gen ideal):
     """

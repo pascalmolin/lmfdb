@@ -8,6 +8,7 @@ try:
     from dirichlet_conrey import *
 except:
     logger.critical("dirichlet_conrey.pyx cython file is not available ...")
+import lib
 from lib.HeckeCharacters import *
 
 logger = make_logger("DC")
