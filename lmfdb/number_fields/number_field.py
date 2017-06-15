@@ -700,6 +700,7 @@ def download_search(info, res):
 #        wnf = WebNumberField.from_data(f)
 #        entry = ', '.join(
 #            [str(wnf.poly()), str(wnf.disc()), str(wnf.galois_t()), str(wnf.class_group_invariants_raw())])
+        label = '"%s"'%f['label']
         pol = str2pol(f['coeffs'])
         D = decodedisc(f['disc_abs_key'], f['disc_sign'])
         gal_t = f['galois']['t']
@@ -707,7 +708,7 @@ def download_search(info, res):
             cl = string2list(f['class_group'])
         else:
             cl = [-1]
-        entry = ', '.join([str(pol), str(D), str(gal_t), str(cl)])
+        entry = ', '.join([str(label), str(pol), str(D), str(cl)])
         s += '[' + entry + ']' + ',\\\n'
     s = s[:-3]
     if dltype == 'gp':
