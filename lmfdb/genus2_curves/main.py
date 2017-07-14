@@ -460,30 +460,32 @@ def download_search(info):
     filename = 'genus2_curves' + download_file_suffix[lang]
     mydate = time.strftime("%d %B %Y")
     # reissue query here
+
+    lang = 'text'
+    query_fields = [
+            'label', 'eqn', 'cond', 'abs_disc', 'analytic_rank',
+            'aut_grp_id', 'cond',
+            'disc_sign', 'eqn', 'g2_inv', 'geom_aut_grp_id',
+            'globally_solvable', 'has_square_sha',
+            'is_gl2_type', 'is_simple_base', 'is_simple_geom',
+            'label', 'locally_solvable', 'non_solvable_places', 'num_rat_pts',
+            'num_rat_wpts', 'real_geom_end_alg', 'root_number', 'st_group',
+            'torsion_order', 'torsion_subgroup', 'two_selmer_rank',
+            # 'class', 'igusa_clebsch_inv', 'igusa_inv', 'bad_lfactors',
+            # 'Lhash'
+            ]
     try:
-        res = g2c_db_curves().find(literal_eval(info.get('query','{}')),{'_id':False,'eqn':True})
+        res = g2c_db_curves().find(literal_eval(info.get('query','{}')),
+                {'_id':False}.update( (f,True) for f in query_fields ))
     except Exception as err:
         return "Unable to parse query: %s"%err
-    c = download_comment_prefix[lang]
-    s =  '\n'
-    s += c + ' Genus 2 curves downloaded from the LMFDB downloaded on %s.\n'% mydate
-    s += c + ' Query "%s" returned %d curves.\n\n' %(str(info.get('query')), res.count())
-    s += c + ' Below is a list called data. Each entry has the form:\n'
-    s += c + '   [[f coeffs],[h coeffs]]\n'
-    s += c + ' defining the hyperelliptic curve y^2+h(x)y=f(x)\n'
-    s += c + '\n'
-    s += c + ' ' + download_make_data_comment[lang] + '\n'
+    s = ';'.join( query_fields ) + '\n'
+    s += '\n'.join([ ';'.join( str(r[q]) for q in query_fields ) for r in res ])
     s += '\n'
-    s += download_assignment_start[lang] + '\\\n'
-    s += str(',\n'.join([str(r['eqn']) for r in res])) # list of curve equations
-    s += download_assignment_end[lang]
-    s += '\n\n'
-    s += download_make_data[lang]
     strIO = StringIO.StringIO()
     strIO.write(s)
     strIO.seek(0)
     return send_file(strIO, attachment_filename=filename, as_attachment=True, add_etags=False)
-
 
 @g2c_page.route("/Completeness")
 def completeness_page():
